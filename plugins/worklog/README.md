@@ -16,5 +16,10 @@ Generates an HTML work report and posts status comments to JIRA tickets for the 
 
 - GitHub CLI (`gh`) must be installed and authenticated
 - A worklog.yaml file (default: `~/worklog/worklog.yaml`)
-- [TaskLedger](https://github.com/bryan-cox/taskledger) binary for HTML report generation
-- Atlassian JIRA MCP server for posting status comments
+
+### Additional prerequisites for `/status-update`
+
+The `/status-update` skill depends on the [taskledger](https://github.com/bryan-cox/taskledger) plugin, which must be installed separately. It invokes `/taskledger:html-report` and `/taskledger:update-jira` to generate reports and post JIRA comments.
+
+- [TaskLedger](https://github.com/bryan-cox/taskledger) binary built at `~/bryan-cox/taskledger/bin/taskledger`
+- Atlassian JIRA MCP server configured for posting status comments

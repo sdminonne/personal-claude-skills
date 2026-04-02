@@ -33,5 +33,5 @@ Populate worklog from GitHub PR activity and generate biweekly status reports wi
 
 **Prerequisites:**
 - GitHub CLI (`gh`) installed and authenticated
-- [TaskLedger](https://github.com/bryan-cox/taskledger) binary for HTML report generation
+- `/status-update` requires the [taskledger](https://github.com/bryan-cox/taskledger) plugin (invokes `/taskledger:html-report` and `/taskledger:update-jira`)
 - Atlassian JIRA MCP server for posting status comments
