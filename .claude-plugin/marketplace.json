@@ -1,0 +1,14 @@
+{
+  "name": "personal-claude-skills",
+  "owner": {
+    "name": "bryan-cox"
+  },
+  "plugins": [
+    {
+      "name": "behavior-driven-testing",
+      "source": "./plugins/behavior-driven-testing",
+      "description": "Guides writing of behavior-driven Go unit tests that prioritize testing meaningful behaviors over chasing code coverage",
+      "version": "0.1.0"
+    }
+  ]
+}
