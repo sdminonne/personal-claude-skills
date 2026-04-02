@@ -22,3 +22,16 @@ Guides writing of behavior-driven Go unit tests that prioritize testing meaningf
 - Guides table-driven test structure (idiomatic Go)
 - Covers fake clients, mocking patterns, and envtest guidance for Kubernetes API testing
 - Encourages testing behaviors, not implementation details
+
+### worklog
+
+Populate worklog from GitHub PR activity and generate biweekly status reports with JIRA updates.
+
+**Skills included:**
+- `/update-worklog` — Queries GitHub for all PR activity (authored, reviewed, commented) on a given date and generates worklog.yaml task entries with contextual descriptions, auto-detected JIRA tickets, and inferred status. Supports incremental updates via `last_updated` timestamps.
+- `/status-update` — Generates an HTML work report and posts status comments to JIRA tickets for the current biweekly reporting period (Tuesday/Thursday cycle).
+
+**Prerequisites:**
+- GitHub CLI (`gh`) installed and authenticated
+- [TaskLedger](https://github.com/bryan-cox/taskledger) binary for HTML report generation
+- Atlassian JIRA MCP server for posting status comments
