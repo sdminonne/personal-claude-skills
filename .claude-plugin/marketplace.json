@@ -15,6 +15,12 @@
       "source": "./plugins/worklog",
       "description": "Populate worklog from GitHub PR activity and generate biweekly status reports with JIRA updates",
       "version": "0.1.0"
+    },
+    {
+      "name": "quarterly-connection",
+      "source": "./plugins/quarterly-connection",
+      "description": "Generate Red Hat quarterly connection self-evaluations by analyzing worklog data, Jira tickets, GitHub PRs, and code reviews",
+      "version": "0.1.0"
     }
   ]
 }

@@ -35,3 +35,15 @@ Populate worklog from GitHub PR activity and generate biweekly status reports wi
 - GitHub CLI (`gh`) installed and authenticated
 - `/status-update` requires the [taskledger](https://github.com/bryan-cox/taskledger) plugin (invokes `/taskledger:html-report` and `/taskledger:update-jira`)
 - Atlassian JIRA MCP server for posting status comments
+
+### quarterly-connection
+
+Generate Red Hat quarterly connection self-evaluations by analyzing worklog data, Jira tickets, GitHub PRs, and code reviews.
+
+**Skills included:**
+- `/quarterly-connection` — Interactively gathers your quarterly goals, self-evaluation questions, reward zone awards, and work history, then uses parallel agents to analyze your worklog.yaml, enrich Jira tickets, and summarize GitHub activity. Produces a well-organized markdown self-evaluation with work mapped to themes, high-priority items highlighted, and unanswerable questions flagged for your input.
+
+**Prerequisites:**
+- Worklog.yaml file (produced by the [worklog](#worklog) plugin's `/update-worklog` skill)
+- GitHub CLI (`gh`) installed and authenticated
+- Atlassian JIRA MCP server (for enriching Jira ticket details)
