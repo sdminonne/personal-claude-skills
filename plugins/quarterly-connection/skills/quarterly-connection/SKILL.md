@@ -117,25 +117,49 @@ Save the structured summary to a file.
 
 ### 2.2 Subagent: Jira Ticket Enrichment
 
-For every unique Jira ticket found in the worklog, fetch details from Jira. Use the Jira MCP tools if available, otherwise note that manual enrichment is needed.
+Discover tickets from TWO sources and merge into a single deduplicated list:
+
+**Source 1: Worklog** — Extract all unique Jira ticket IDs from the worklog entries.
+
+**Source 2: Jira API** — Search Jira directly for tickets assigned to or resolved by the employee during the quarter:
+- `assignee = {jira_username} AND resolved >= {start_date} AND resolved <= {end_date}`
+- `assignee = {jira_username} AND status changed DURING ({start_date}, {end_date})`
+
+Also search for tickets the employee reported (for aggregate stats only, not accomplishments):
+- `reporter = {jira_username} AND created >= {start_date} AND created <= {end_date}`
+
+This catches tickets not tracked in the worklog (e.g., bugs fixed quickly without a worklog entry, tickets verified but not logged).
+
+Use the Jira MCP tools if available, otherwise note that manual enrichment is needed.
 
 ```
-For each Jira ticket in {ticket_list}:
+For each unique Jira ticket from both sources:
 
 Use the jira_get_issue MCP tool to fetch:
 - Summary/title
 - Priority (Blocker, Critical, Major, Minor, Trivial)
 - Status
 - Assignee
+- Reporter
 - Component
 - Epic link (if any)
 - Description summary (first 200 chars)
 
-Verify the employee is/was the assignee of each ticket. Exclude tickets where someone else is the assignee — those were likely just referenced in the worklog through code reviews or comments, not owned by the employee. If the assignee field is empty but the worklog shows substantial authored work on the ticket, keep it and flag it for the employee to confirm.
+Ownership rules for including a ticket as an accomplishment:
+- Include if the employee is/was the assignee
+- Include if unassigned but the worklog shows substantial authored work (PRs merged, etc.) — flag for employee to confirm
+- Exclude if someone else is the assignee, UNLESS the worklog shows the employee did significant work on it (e.g., backported a fix) — in that case, reframe the accomplishment to describe the employee's specific contribution, not the ticket itself
+
+Reporter-only tickets (employee reported but someone else is assignee and no worklog work): count toward "tickets reported" aggregate stat but do NOT include as accomplishments.
 
 Flag tickets with priority Blocker, Critical, or Major for special highlighting in the report.
 
-Group tickets by:
+Calculate aggregate Jira stats:
+- Total tickets reported by the employee during the quarter
+- Total tickets closed/resolved by the employee during the quarter
+- Total tickets verified by the employee during the quarter
+
+Group accomplishment tickets by:
 1. Priority level
 2. Epic/feature area (for theme grouping)
 
@@ -144,23 +168,32 @@ Save results to a file.
 
 ### 2.3 Subagent: GitHub PR Deep Dive
 
-```
-First, extract ALL unique repository URLs from every github_pr field in the worklog for the quarter. Do not hardcode or assume a list of repos — the worklog is the source of truth for which repos the employee contributed to. Pass this complete repo list to the subagent.
+Discover PRs from TWO sources and merge into a single deduplicated list:
 
-For each GitHub PR URL found in the worklog:
+**Source 1: Worklog** — Extract ALL unique repository URLs from every github_pr field in the worklog for the quarter. Do not hardcode or assume a list of repos.
+
+**Source 2: GitHub API** — For every repo discovered in the worklog, AND as a broad catch-all, query GitHub directly for all merged PRs by the employee during the quarter:
+- Per repo: `gh pr list --repo {org}/{repo} --author {username} --state merged --search "merged:{start_date}..{end_date}" --limit 200`
+- Broad search: `gh search prs --author {username} --merged "{start_date}..{end_date}" --limit 200` to discover repos not in the worklog
+
+This catches PRs not tracked in the worklog (e.g., quick fixes, dependency bumps, or work in repos the employee forgot to log).
+
+```
+For each unique PR from both sources:
 - PR title
 - PR state (merged, open, closed)
+- PR author (verify it matches the employee)
 - Lines added/removed
 - Number of review comments received
 - Repository name
 - Merge date (if merged)
 
 Calculate aggregate stats (count only merged PRs, not closed-without-merge):
-- Total PRs merged, grouped by every repository found in the worklog
+- Total PRs merged, grouped by every repository the employee contributed to
 - Total lines changed (added + removed) across merged PRs
-- Complete list of repos contributed to (derived from worklog, not hardcoded)
+- Complete list of repos contributed to
 
-Build GitHub Contributions links for each repository. Use is%3Amerged (not closed) to exclude PRs that were closed without merging:
+Build GitHub Contributions links for each repository. Use is%3Amerged and merged%3A (not closed) to exclude PRs that were closed without merging:
 https://github.com/{org}/{repo}/pulls?q=is%3Apr+is%3Amerged+author%3A{username}+merged%3A{start_date}..{end_date}
 
 Save results to a file.
