@@ -7,16 +7,18 @@ description: Use when writing a Red Hat quarterly connection self-evaluation, pr
 
 Generate a comprehensive quarterly connection self-evaluation for a Red Hat software engineer. This document directly impacts the employee's performance rating and bonus, so thoroughness and accuracy are essential. The skill analyzes worklog data, Jira tickets, GitHub PRs, and code reviews to produce a well-organized self-evaluation in markdown.
 
+The questions change each quarter, so the skill asks the employee for the exact questions they need to answer and structures the output around those. Previous quarterly connections (if provided) inform style and tone — not structure.
+
 ## Workflow Overview
 
 ```
 Gather Inputs (interactive)
     |
     v
-Parallel Investigation (subagents)
+Parallel Investigation (subagents, all opus model)
     |
     v
-Synthesize & Organize by Goals
+Synthesize & Organize by Theme
     |
     v
 Draft Quarterly Connection (markdown)
@@ -43,33 +45,42 @@ Use this to filter worklog entries to only the relevant quarter.
 
 ### 1.3 Quarterly Goals
 
-Ask: "What were your quarterly goals? Please list them — these will be the primary organizing structure for your self-evaluation."
+Ask: "What were your quarterly goals/priorities from last quarter? These will help organize your accomplishments into meaningful themes."
 
-Store these as the top-level sections for the output. Every piece of work will be mapped to a goal where possible. Work that doesn't fit any goal gets its own "Additional Contributions" section.
+These are the priorities the employee set in their *previous* quarterly connection. They help map accomplishments to themes and demonstrate alignment. Work that doesn't fit any goal still gets included.
 
 ### 1.4 Quarterly Connection Questions
 
-Ask: "What questions does the quarterly connection self-evaluation ask you to answer? Please paste them or list them."
+Ask: "What questions does the quarterly connection self-evaluation ask you to answer this quarter? Please paste them or list them."
 
-These are the specific prompts the employee needs to respond to. The skill will attempt to answer each one using the data gathered. Questions that cannot be answered from the available data will be flagged with a `<!-- NEEDS INPUT -->` marker so the employee can fill them in.
+The questions change each quarter. Do not assume or suggest specific questions — wait for what the employee provides. These questions become the top-level sections of the output document. Each question gets its own section with the question as a header.
 
-### 1.5 Previous Quarterly Connections
+### 1.5 Reward Zone Awards
+
+Ask: "Did you receive or give any Reward Zone awards this quarter? If so, please share the details (who recognized you, what for, or who you recognized and why)."
+
+Reward Zone awards are peer recognition at Red Hat. They provide strong evidence of impact and collaboration that managers value seeing in the QC, especially in the "Notable HOW accomplishments" section or as supporting evidence for themes.
+
+### 1.6 Previous Quarterly Connections
 
 Ask: "Do you have any previous quarterly connections I can reference for tone, format, and style? If so, please provide the file path(s)."
 
 If provided, read them and use them as reference for:
 - Writing style and tone
 - Level of detail expected
-- How goals and accomplishments are typically framed
+- How accomplishments are grouped and framed
 - Any recurring themes or long-running projects
 
-### 1.6 Additional Context
+If not provided, use the style guide in the "Document Format" section below.
+
+### 1.7 Additional Context
 
 Ask: "Is there anything else I should know before creating this report? This could include:
-- Work not tracked in Jira or GitHub (mentoring, meetings, design discussions, oncall, etc.)
-- Key accomplishments you want highlighted
-- Challenges or blockers you faced
-- Team or organizational impact you want called out
+- Work not tracked in Jira or GitHub (mentoring, meetings, design discussions, oncall, interrupt catcher duties, etc.)
+- Customer interactions or support
+- Technical interviews conducted
+- Production incidents assisted with
+- Team onboarding or knowledge sharing sessions
 - Anything else relevant to your performance this quarter"
 
 This is the final catch-all. Everything the employee says here gets incorporated into the report.
@@ -121,7 +132,9 @@ Use the jira_get_issue MCP tool to fetch:
 
 Flag tickets with priority Blocker, Critical, or Major for special highlighting in the report.
 
-Group tickets by priority level.
+Group tickets by:
+1. Priority level
+2. Epic/feature area (for theme grouping)
 
 Save results to a file.
 ```
@@ -140,10 +153,12 @@ Use gh CLI to fetch:
 - Merge date (if merged)
 
 Calculate aggregate stats:
-- Total PRs authored
-- Total PRs merged
+- Total PRs authored and merged, grouped by repository
 - Total lines changed (added + removed)
 - Repos contributed to
+
+Build GitHub Contributions links for each repository using the format:
+https://github.com/{org}/{repo}/pulls?q=is%3Apr+author%3A{username}+closed%3A{start_date}..{end_date}
 
 Save results to a file.
 ```
@@ -171,12 +186,13 @@ Only launch this if the employee provided previous quarterly connections.
 Read the previous quarterly connection(s) at {file_paths}.
 
 Analyze:
-- Writing style and tone (formal, casual, bullet-heavy, narrative)
-- How goals are structured and referenced
-- Level of detail in accomplishments
-- How metrics and impact are framed
+- Writing style and tone
+- How accomplishments are grouped into themes
+- Level of detail in each bullet point
+- How Jira tickets are referenced
+- How GitHub contributions are summarized
+- What subsections or patterns appear within each question's response
 - Any recurring themes or long-running projects that may continue into this quarter
-- Format and section structure
 
 Produce a style guide summary that can be used to match tone and format.
 ```
@@ -185,14 +201,24 @@ Produce a style guide summary that can be used to match tone and format.
 
 Once all subagents complete, synthesize the results.
 
-### 3.1 Map Work to Goals
+### 3.1 Group Work into Themes
 
-For each quarterly goal the employee listed:
-1. Identify all Jira tickets, PRs, and worklog entries that relate to that goal
-2. Group them under the goal
-3. Summarize the body of work in a narrative that demonstrates progress toward or completion of the goal
+Rather than organizing strictly by goal, group accomplishments into compelling narrative themes. Each theme should tell a story about a significant area of contribution. Look at the employee's quarterly goals and the work data to identify natural groupings.
 
-Use Jira ticket summaries, PR titles, and worklog descriptions to build the narrative. Mention specific ticket IDs and PR URLs as evidence.
+Good themes are impact-oriented and specific:
+- "Delivered self-managed Azure HostedCluster functionality to dev preview, enabling customer-0 adoption"
+- "Resolved critical production bugs affecting ARO HCP reliability and performance"
+- "Led AI tooling innovation through substantial contributions to the ai-helpers repository"
+
+Bad themes are generic:
+- "Bug fixes"
+- "Code contributions"
+- "Various improvements"
+
+For each theme:
+1. Write a bold header that summarizes the impact
+2. List specific accomplishments as dash-prefixed bullets with Jira ticket IDs in parentheses
+3. Each bullet should explain what was done AND why it mattered
 
 ### 3.2 Identify High-Impact Work
 
@@ -201,119 +227,104 @@ From the Jira enrichment data, identify and flag:
 - **Critical priority** tickets: High-urgency work with significant impact
 - **Major priority** tickets: Important work with broad reach
 
-For each high-priority item, write a brief impact statement explaining why it mattered and what the outcome was.
+Weave these into the relevant themes rather than listing them separately. High-priority items should be near the top of their theme and their impact should be explicitly called out.
 
-### 3.3 Categorize Remaining Work
+### 3.3 Build "Notable HOW Accomplishments"
 
-Work that doesn't map to any quarterly goal goes into an "Additional Contributions" section, organized by category:
-- Code reviews and mentoring
-- Bug fixes
-- CI/infrastructure improvements
-- Documentation
+This section is where the employee demonstrates leadership, collaboration, and engineering excellence beyond just "what" they delivered. Draw from:
+- Worklog descriptions mentioning debugging, coordination, mentoring
+- Interrupt catcher duties
 - Cross-team collaboration
-- Other
+- Customer interactions
+- Technical interviews
+- Knowledge sharing / onboarding help
+- Reward Zone awards (both given and received)
+- Production incident support
+- Process improvements
+- Additional context the employee provided
 
-### 3.4 Answer Quarterly Connection Questions
+### 3.4 Build GitHub Contributions Section
+
+Aggregate PR counts by repository and generate search links:
+```
+GitHub Contributions:
+- {Repo} Merged PRs: {count} - {search_url}
+- {Repo} Merged PRs: {count} - {search_url}
+```
+
+### 3.5 Answer Each QC Question
 
 For each question from section 1.4:
-1. Attempt to answer it using the synthesized data
-2. If the question can be answered from the data (e.g., "What did you accomplish this quarter?"), draft a response
-3. If the question requires subjective input the data can't provide (e.g., "How do you want to grow?"), mark it with `<!-- NEEDS INPUT: This question requires your personal reflection. -->` and provide any relevant data points that might help the employee answer it
+1. Determine whether the question can be answered from the gathered data (worklog, Jira, GitHub, additional context, reward zone awards)
+2. If answerable: draft a thorough response using the synthesized data, organized with theme headers and dash-prefixed bullets where the content warrants it
+3. If partially answerable: draft what you can and mark remaining gaps with `<!-- NEEDS INPUT: [specific guidance on what's needed] -->`
+4. If the question is purely subjective/personal (e.g., about feelings, career aspirations, energy): mark with `<!-- NEEDS INPUT: This question requires your personal reflection. -->` and include any relevant data points from the quarter that might help the employee reflect (e.g., blockers encountered, rewarding themes, reward zone awards)
 
 ## Phase 4: Generate the Quarterly Connection Document
 
-Produce the final document in markdown format. Follow the style and tone of previous quarterly connections if provided.
+Produce the final document in markdown format matching the Red Hat QC style.
 
-### Document Structure
+### Document Format
+
+The document is structured around the questions the employee provided. Each question becomes a top-level section.
 
 ```markdown
-# Quarterly Connection: {Quarter} {Year}
+# {Question 1 — short title}
 
-**Employee:** {name from gh api user or ask}
-**Period:** {start_date} to {end_date}
-**Date:** {today}
+**{The full question text}**
 
----
-
-## Quarter at a Glance
-
-- **Jira tickets worked:** {count}
-- **PRs authored:** {count} ({merged_count} merged)
-- **Code reviews performed:** {count}
-- **Lines of code changed:** {count}
-- **Repositories contributed to:** {list}
+{Response content — organized with bold theme headers and dash-prefixed bullets for accomplishment-style questions, or bullet lists / prose for other question types}
 
 ---
 
-## Goal: {Goal 1 Title}
+# {Question 2 — short title}
 
-{Narrative summary of work toward this goal}
+**{The full question text}**
 
-### Key Accomplishments
-
-- {Accomplishment with Jira ticket and/or PR reference}
-- {Accomplishment}
-
-### High-Impact Items
-
-> **[BLOCKER] {TICKET-ID}: {Summary}**
-> {Impact statement}
-
-> **[CRITICAL] {TICKET-ID}: {Summary}**
-> {Impact statement}
+{Response content}
 
 ---
 
-## Goal: {Goal 2 Title}
-
-{Same structure as above}
+{Continue for each question}
 
 ---
 
-## Additional Contributions
+## Sections Requiring Your Input
 
-### Code Reviews
-{Summary of review activity with count and notable reviews}
-
-### {Other categories as needed}
-
----
-
-## Quarterly Connection Questions
-
-### {Question 1}
-
-{Answer or <!-- NEEDS INPUT --> marker}
-
-### {Question 2}
-
-{Answer or <!-- NEEDS INPUT --> marker}
-
----
-
-## Questions Requiring Your Input
-
-The following questions could not be fully answered from your work data and need your personal input:
-
-- {Question X} — see section above
-- {Question Y} — see section above
+{List of questions/sections marked with <!-- NEEDS INPUT --> that the employee must fill in}
 ```
 
-### Formatting Guidelines
+For questions that ask about accomplishments or work performed, use the theme-based grouping from Phase 3:
 
-- Use bold for Jira ticket IDs and priorities
-- Use blockquotes for high-impact item callouts
-- Link GitHub PRs using markdown links: `[PR #123](url)`
-- Use concrete numbers and metrics wherever possible — reviewers respond to quantified impact
-- Write accomplishments in past tense, active voice: "Implemented X that resulted in Y" not "X was implemented"
-- Frame work in terms of impact, not just activity: "Fixed critical DNS pagination bug (OCPBUGS-74495) that was blocking cluster upgrades for Azure customers" not "Fixed a bug"
+```markdown
+**{Impact-oriented theme header}**
+- {Accomplishment with Jira ticket ID in parentheses (TICKET-1234), explaining what was done and its impact}
+- {Another accomplishment under this theme}
 
-### Tone
+**{Another theme header}**
+- {Accomplishments under this theme}
 
-- Professional but not stiff
-- Confident without being boastful — let the work speak for itself
-- Specific and evidence-based
-- Match the tone of previous quarterly connections if provided
+**Notable HOW accomplishments**
+- {Leadership, collaboration, debugging, mentoring, etc.}
+- {Reward Zone awards received or given}
+
+GitHub Contributions:
+- {Repo} Merged PRs: {count} - {search_url}
+```
+
+For questions that cannot be answered from data, provide the `<!-- NEEDS INPUT -->` marker with guidance on what the employee should write.
+
+### Style Guide
+
+If previous quarterly connections were provided, match their style. Otherwise, follow these defaults:
+
+- **Bold headers** for accomplishment theme groups
+- **Dash-prefixed bullets** (`- ` not `*` or numbered lists) for individual accomplishments
+- **Jira ticket IDs inline in parentheses**: "Fixed the ExternalDNS deletion race condition (CNTRLPLANE-1857)"
+- **Active voice, past tense** for accomplishments: "Implemented X enabling Y" not "X was implemented"
+- **Impact-oriented framing**: every bullet should convey both what was done and why it mattered
+- **Quantified metrics** where possible: PR counts, ticket counts, specific dates
+- **Confident but not boastful tone** — let the work speak for itself
 
 ## Phase 5: Review and Refine
 
