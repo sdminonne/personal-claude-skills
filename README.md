@@ -42,6 +42,7 @@ Generate Red Hat quarterly connection self-evaluations by analyzing worklog data
 
 **Skills included:**
 - `/quarterly-connection` — Interactively gathers your quarterly goals, self-evaluation questions, reward zone awards, and work history, then uses parallel agents to analyze your worklog.yaml, enrich Jira tickets, and summarize GitHub activity. Produces a well-organized markdown self-evaluation with work mapped to themes, high-priority items highlighted, and unanswerable questions flagged for your input.
+- `/verify-qc` — Fact-checks a quarterly connection document by verifying Jira ticket ownership, PR merge status, numerical claims, and GitHub contribution links against real data. Reports errors, warnings, and unverifiable claims.
 
 **Prerequisites:**
 - Worklog.yaml file (produced by the [worklog](#worklog) plugin's `/update-worklog` skill)
