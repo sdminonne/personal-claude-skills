@@ -109,7 +109,7 @@ Produce a structured summary:
 2. List of all unique Jira tickets worked on, with aggregated descriptions across all days
 3. List of all GitHub PRs authored, with their final status
 4. List of all code reviews performed (entries with jira_ticket "Reviewing Pull Requests")
-5. Count of PRs authored, PRs merged, PRs reviewed
+5. Count of PRs merged (exclude closed-without-merge), PRs reviewed
 6. Any blockers mentioned
 
 Save the structured summary to a file.
@@ -126,9 +126,12 @@ Use the jira_get_issue MCP tool to fetch:
 - Summary/title
 - Priority (Blocker, Critical, Major, Minor, Trivial)
 - Status
+- Assignee
 - Component
 - Epic link (if any)
 - Description summary (first 200 chars)
+
+Verify the employee is/was the assignee of each ticket. Exclude tickets where someone else is the assignee — those were likely just referenced in the worklog through code reviews or comments, not owned by the employee. If the assignee field is empty but the worklog shows substantial authored work on the ticket, keep it and flag it for the employee to confirm.
 
 Flag tickets with priority Blocker, Critical, or Major for special highlighting in the report.
 
@@ -142,9 +145,9 @@ Save results to a file.
 ### 2.3 Subagent: GitHub PR Deep Dive
 
 ```
-For each GitHub PR URL found in the worklog for the quarter:
+First, extract ALL unique repository URLs from every github_pr field in the worklog for the quarter. Do not hardcode or assume a list of repos — the worklog is the source of truth for which repos the employee contributed to. Pass this complete repo list to the subagent.
 
-Use gh CLI to fetch:
+For each GitHub PR URL found in the worklog:
 - PR title
 - PR state (merged, open, closed)
 - Lines added/removed
@@ -152,13 +155,13 @@ Use gh CLI to fetch:
 - Repository name
 - Merge date (if merged)
 
-Calculate aggregate stats:
-- Total PRs authored and merged, grouped by repository
-- Total lines changed (added + removed)
-- Repos contributed to
+Calculate aggregate stats (count only merged PRs, not closed-without-merge):
+- Total PRs merged, grouped by every repository found in the worklog
+- Total lines changed (added + removed) across merged PRs
+- Complete list of repos contributed to (derived from worklog, not hardcoded)
 
-Build GitHub Contributions links for each repository using the format:
-https://github.com/{org}/{repo}/pulls?q=is%3Apr+author%3A{username}+closed%3A{start_date}..{end_date}
+Build GitHub Contributions links for each repository. Use is%3Amerged (not closed) to exclude PRs that were closed without merging:
+https://github.com/{org}/{repo}/pulls?q=is%3Apr+is%3Amerged+author%3A{username}+merged%3A{start_date}..{end_date}
 
 Save results to a file.
 ```
